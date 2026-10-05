@@ -1,0 +1,6 @@
+{
+  "name": "Passport Printer",
+  "description": "Create. Arrange. Print. Browser-based passport photo preparation and printing tool.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
