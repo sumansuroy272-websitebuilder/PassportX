@@ -24,23 +24,23 @@ export const RotationControls: React.FC<RotationControlsProps> = ({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <button
           type="button"
           onClick={onRotateLeft}
-          className="h-10 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer active:scale-98"
+          className="min-h-[44px] px-3.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-2xs hover:border-blue-400 hover:text-blue-700 cursor-pointer active:scale-[0.98]"
         >
-          <RotateCcw className="w-4 h-4 text-slate-600" />
-          <span>Rotate Left</span>
+          <RotateCcw className="w-4 h-4 text-slate-600 shrink-0" />
+          <span>Rotate Left (-90°)</span>
         </button>
 
         <button
           type="button"
           onClick={onRotateRight}
-          className="h-10 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer active:scale-98"
+          className="min-h-[44px] px-3.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-2xs hover:border-blue-400 hover:text-blue-700 cursor-pointer active:scale-[0.98]"
         >
-          <RotateCw className="w-4 h-4 text-slate-600" />
-          <span>Rotate Right</span>
+          <RotateCw className="w-4 h-4 text-slate-600 shrink-0" />
+          <span>Rotate Right (+90°)</span>
         </button>
       </div>
     </div>

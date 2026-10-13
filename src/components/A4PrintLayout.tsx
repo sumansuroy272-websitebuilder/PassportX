@@ -14,6 +14,7 @@ import {
   FileDown,
   Keyboard,
   ShieldCheck,
+  Eye,
 } from 'lucide-react';
 import {
   A4LayoutSettings,
@@ -23,6 +24,7 @@ import {
   COPY_PRESETS,
   PhotoSizeConfig,
   A4SmartGridResult,
+  AspectRatioPreset,
 } from '../types/passport';
 import {
   computeA4SmartGrid,
@@ -34,6 +36,7 @@ import { exportA4LayoutToPdf, PdfExportResult } from '../utils/pdfExport';
 import { HelperTooltip } from './HelperTooltip';
 import { ShortcutsModal } from './ShortcutsModal';
 import { PdfLoadingModal, PdfGenerationStage } from './PdfLoadingModal';
+import { PrintPreviewModal } from './PrintPreviewModal';
 
 interface A4PrintLayoutProps {
   processedPhotoUrl: string;
@@ -61,6 +64,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
   const [pdfSuccessMessage, setPdfSuccessMessage] = useState<string | null>(null);
   const [pdfErrorMessage, setPdfErrorMessage] = useState<string | null>(null);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'sheet' | 'settings'>('sheet');
 
   // PDF Generation Loading Overlay & Cached Result
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
@@ -75,6 +79,18 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
   const [isCustomCopies, setIsCustomCopies] = useState<boolean>(() => {
     return !COPY_PRESETS.includes(settings.copies as any);
   });
+
+  // Print Preview Modal state
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+
+  const activeAspectPreset: AspectRatioPreset = useMemo(() => ({
+    id: settings.photoSize.preset,
+    name: `${settings.photoSize.widthMm} × ${settings.photoSize.heightMm} mm`,
+    widthMm: settings.photoSize.widthMm,
+    heightMm: settings.photoSize.heightMm,
+    ratio: settings.photoSize.widthMm / (settings.photoSize.heightMm || 1),
+    description: `${settings.photoSize.widthMm} × ${settings.photoSize.heightMm} mm photo`,
+  }), [settings.photoSize]);
 
   // Calculate Smart Grid layout dynamically
   const gridResult: A4SmartGridResult = useMemo(() => {
@@ -247,7 +263,8 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
       alert('Photos do not fit on A4 sheet. Please reduce copies or photo size before printing.');
       return;
     }
-    window.print();
+    // Open Print Preview Modal first to inspect exact A4 / 4x6 sheet before system print dialog
+    setIsPrintPreviewOpen(true);
   };
 
   const handleExportPdf = async () => {
@@ -362,7 +379,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
   const resolvedDimensions = resolvePhotoDimensionsMm(settings.photoSize);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4">
+    <div className="w-full max-w-6xl mx-auto space-y-4 pb-28 lg:pb-8">
       {/* PDF Generation Loading Experience & Success Screen */}
       <PdfLoadingModal
         isOpen={isPdfModalOpen}
@@ -382,79 +399,91 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
         onClose={() => setIsShortcutsOpen(false)}
       />
 
-      {/* Top Bar Actions (Hidden during print) */}
-      <div className="no-print flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:px-5 rounded-xl border border-slate-200/80 shadow-2xs">
-        <div className="flex items-center gap-2 sm:gap-3">
+      {/* Top Bar Actions (Sticky so buttons are always visible on scroll) */}
+      <div className="no-print sticky top-12 sm:top-14 z-30 flex items-center justify-between gap-2 bg-white/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-sm">
+        {/* Navigation & Secondary Controls Row */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={onBackToAdjust}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 transition-colors cursor-pointer min-h-[42px]"
             title="Return to photo editor (Esc)"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Adjust</span>
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline">Back to Adjust</span>
+            <span className="xs:hidden">Back</span>
           </button>
 
           {onStartOver && (
             <button
               type="button"
               onClick={handleSafeStartOver}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer min-h-[42px]"
               title="Start over with a new photo"
             >
-              <RotateCcw className="w-4 h-4 text-slate-500" />
-              <span>Start Over</span>
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              <span className="hidden sm:inline">Start Over</span>
             </button>
           )}
-
-          <span className="text-xs text-slate-500 hidden md:inline">
-            A4 Print Layout · {settings.copies} copies · {resolvedDimensions.widthMm} × {resolvedDimensions.heightMm} mm
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsShortcutsOpen(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-            title="View keyboard shortcuts"
-          >
-            <Keyboard className="w-3.5 h-3.5 text-slate-600" />
-            <span className="hidden md:inline">Shortcuts</span>
-          </button>
 
           <button
             type="button"
             onClick={handleAutoArrange}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-2xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer min-h-[42px]"
             title="Automatically calculate best grid, spacing, and centered margins (A)"
           >
-            <Sparkles className="w-4 h-4 text-blue-600" />
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span>Auto Arrange</span>
+          </button>
+        </div>
+
+        {/* Action Buttons Row */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setIsShortcutsOpen(true)}
+            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer min-h-[42px]"
+            title="View keyboard shortcuts"
+          >
+            <Keyboard className="w-3.5 h-3.5 text-slate-600" />
+            <span>Shortcuts</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsPrintPreviewOpen(true)}
+            disabled={!gridResult.fits}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-2xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed min-h-[42px]"
+            title="Inspect exact alignment & margins on standard A4 or 4x6 photo paper before printing"
+          >
+            <Eye className="w-4 h-4 text-blue-600 shrink-0" />
+            <span className="hidden sm:inline">Print Preview</span>
+            <span className="sm:hidden">Preview</span>
           </button>
 
           <button
             type="button"
             onClick={handlePrint}
             disabled={!gridResult.fits}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-2xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            title={`Print A4 sheet directly (${isMac ? 'Cmd+P' : 'Ctrl+P'})`}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed min-h-[42px]"
+            title={`Print sheet (${isMac ? 'Cmd+P' : 'Ctrl+P'})`}
           >
-            <Printer className="w-4 h-4 text-slate-600" />
-            <span>Print Sheet</span>
+            <Printer className="w-4 h-4 text-slate-700 shrink-0" />
+            <span className="hidden sm:inline">Print Sheet</span>
+            <span className="sm:hidden">Print</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportPdf}
             disabled={!gridResult.fits || isExportingPdf}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed min-h-[42px]"
             title={`Download printable A4 PDF (${isMac ? 'Cmd+S' : 'Ctrl+S'})`}
           >
             {isExportingPdf ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <FileDown className="w-4 h-4" />
+              <FileDown className="w-4 h-4 shrink-0" />
             )}
             <span>Download PDF</span>
             <kbd className="hidden lg:inline-block px-1.5 py-0.5 bg-blue-700/60 border border-blue-400/30 rounded text-[10px] font-mono text-blue-100 font-normal">
@@ -547,12 +576,42 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
         </div>
       )}
 
+      {/* Mobile/Tablet Segmented View Switcher (lg:hidden) */}
+      <div className="lg:hidden flex items-center p-1 bg-slate-200/90 rounded-2xl gap-1">
+        <button
+          type="button"
+          onClick={() => setMobileTab('sheet')}
+          className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 min-h-[42px] cursor-pointer ${
+            mobileTab === 'sheet'
+              ? 'bg-white text-blue-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Grid className="w-4 h-4" />
+          <span>1. Sheet Preview</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('settings')}
+          className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 min-h-[42px] cursor-pointer ${
+            mobileTab === 'settings'
+              ? 'bg-white text-blue-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          <span>2. Grid Settings</span>
+        </button>
+      </div>
+
       {/* Main Responsive Grid Layout */}
       {/* Desktop: LEFT: Live Realistic A4 Preview, RIGHT: Layout Controls */}
-      {/* Mobile: Stacked vertically */}
+      {/* Mobile: Switch between tabs or scroll */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: Live Realistic A4 Preview (lg:col-span-7) */}
-        <div className="lg:col-span-7 space-y-3">
+        <div className={`lg:col-span-7 space-y-3 ${
+          mobileTab === 'sheet' ? 'block' : 'hidden lg:block'
+        }`}>
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/70 border border-blue-200/60 px-2 py-0.5 rounded-md shadow-2xs">
@@ -567,7 +626,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
             </span>
           </div>
 
-          <div className="bg-slate-800 rounded-2xl p-4 sm:p-8 flex items-center justify-center min-h-[480px] sm:min-h-[620px] shadow-sm overflow-hidden">
+          <div className="bg-slate-800 rounded-2xl p-4 sm:p-8 flex items-center justify-center min-h-[440px] sm:min-h-[580px] shadow-sm overflow-hidden">
             {/* The True A4 Sheet Paper Container */}
             <div
               id="printable-sheet"
@@ -667,7 +726,9 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
         </div>
 
         {/* RIGHT COLUMN: Layout Controls (lg:col-span-5) */}
-        <div className="no-print lg:col-span-5 space-y-4">
+        <div className={`no-print lg:col-span-5 space-y-4 ${
+          mobileTab === 'settings' ? 'block' : 'hidden lg:block'
+        }`}>
           {/* Step 3: Photo Size Card */}
           <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
@@ -675,7 +736,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
                 <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/70 border border-blue-200/60 px-2 py-0.5 rounded-md shadow-2xs">
                   Step 3
                 </span>
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                   Choose Photo Size
                 </label>
                 <HelperTooltip
@@ -684,7 +745,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
                   optimalTip="Always confirm your specific consular requirements before printing."
                 />
               </div>
-              <span className="text-xs text-blue-600 font-medium">
+              <span className="text-xs text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/60">
                 {resolvedDimensions.widthMm} × {resolvedDimensions.heightMm} mm
               </span>
             </div>
@@ -694,10 +755,10 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => handleSizePresetChange('35x45')}
-                className={`py-2 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-center ${
+                className={`min-h-[46px] py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-bold transition-all cursor-pointer text-center flex items-center justify-center ${
                   settings.photoSize.preset === '35x45'
-                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600/30'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 35 × 45 mm
@@ -706,10 +767,10 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => handleSizePresetChange('2x2')}
-                className={`py-2 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-center ${
+                className={`min-h-[46px] py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-bold transition-all cursor-pointer text-center flex items-center justify-center ${
                   settings.photoSize.preset === '2x2'
-                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600/30'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 2 × 2 inch
@@ -718,10 +779,10 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => handleSizePresetChange('custom')}
-                className={`py-2 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-center ${
+                className={`min-h-[46px] py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-bold transition-all cursor-pointer text-center flex items-center justify-center ${
                   settings.photoSize.preset === 'custom'
-                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600/30'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 Custom Size
@@ -820,7 +881,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
             </div>
 
             {/* Presets: 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, Custom */}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {COPY_PRESETS.map((count) => {
                 const isSelected = !isCustomCopies && settings.copies === count;
                 return (
@@ -828,10 +889,10 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
                     key={count}
                     type="button"
                     onClick={() => handleCopyPresetSelect(count)}
-                    className={`min-w-8 h-8 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center border ${
+                    className={`min-w-[44px] h-[44px] px-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center border shadow-2xs active:scale-95 ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-600 text-white shadow-2xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                        : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300'
                     }`}
                   >
                     {count}
@@ -842,10 +903,10 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCustomCopies(true)}
-                className={`h-8 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                className={`h-[44px] px-4 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border shadow-2xs active:scale-95 flex items-center justify-center ${
                   isCustomCopies
-                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600/30'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30'
+                    : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 Custom
@@ -854,17 +915,17 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
 
             {/* Custom Copies Input */}
             {isCustomCopies && (
-              <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
-                <span className="text-xs font-medium text-slate-600">Enter copies:</span>
+              <div className="flex items-center gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                <span className="text-xs font-semibold text-slate-700">Enter copies:</span>
                 <input
                   type="number"
                   min="1"
                   max="60"
                   value={settings.copies}
                   onChange={(e) => handleCustomCopyChange(parseInt(e.target.value, 10))}
-                  className="w-20 px-2.5 py-1 text-xs font-mono font-bold bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                  className="w-24 px-3 py-1.5 text-xs sm:text-sm font-mono font-bold bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 />
-                <span className="text-xs text-slate-400">(Max 60)</span>
+                <span className="text-xs text-slate-500">(1 – 60 copies)</span>
               </div>
             )}
           </div>
@@ -883,9 +944,9 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
               <button
                 type="button"
                 onClick={handleAutoArrange}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 cursor-pointer"
+                className="text-xs text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer min-h-[32px] transition-colors"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                 Auto Arrange
               </button>
             </div>
@@ -894,7 +955,7 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
             <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                     A4 Orientation
                   </label>
                   <HelperTooltip
@@ -903,19 +964,19 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
                     optimalTip="Portrait is optimal for 35×45 mm; Landscape works best for 2×2 in."
                   />
                 </div>
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="text-xs text-slate-500 font-mono font-medium">
                   {settings.orientation === 'portrait' ? '210 × 297 mm' : '297 × 210 mm'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => handleOrientationChange('portrait')}
-                  className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`min-h-[46px] py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     settings.orientation === 'portrait'
-                      ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600/30'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
                   <div className="w-3.5 h-4.5 border-2 border-current rounded-xs" />
@@ -925,10 +986,10 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOrientationChange('landscape')}
-                  className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`min-h-[46px] py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     settings.orientation === 'landscape'
-                      ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600/30'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
                   <div className="w-4.5 h-3.5 border-2 border-current rounded-xs" />
@@ -1242,6 +1303,57 @@ export const A4PrintLayout: React.FC<A4PrintLayoutProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Mobile Floating Sticky Bottom Action Bar (Ensures Download & Print are always 1-tap accessible) */}
+      <div className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-3 py-2.5 shadow-2xl flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setIsPrintPreviewOpen(true)}
+          disabled={!gridResult.fits}
+          className="px-3.5 py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-40 min-h-[48px] border border-slate-300 shadow-2xs"
+          title="Print Preview on A4 / 4x6 paper"
+        >
+          <Eye className="w-4 h-4 text-blue-600 shrink-0" />
+          <span>Preview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handlePrint}
+          disabled={!gridResult.fits}
+          className="px-3.5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-40 min-h-[48px] border border-slate-200/80"
+          title="Print A4 sheet directly"
+        >
+          <Printer className="w-4 h-4 text-slate-700 shrink-0" />
+          <span>Print</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleExportPdf}
+          disabled={!gridResult.fits || isExportingPdf}
+          className="flex-1 py-3 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed min-h-[48px]"
+          title="Download printable A4 PDF"
+        >
+          {isExportingPdf ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <FileDown className="w-4 h-4 shrink-0" />
+          )}
+          <span>PDF</span>
+        </button>
+      </div>
+
+      {/* Print Preview Modal (Allows inspecting exact A4 / 4x6 paper before printing) */}
+      <PrintPreviewModal
+        isOpen={isPrintPreviewOpen}
+        onClose={() => setIsPrintPreviewOpen(false)}
+        photoUrl={processedPhotoUrl}
+        aspectPreset={activeAspectPreset}
+        initialPaperSizeId="a4"
+        initialOrientation={settings.orientation}
+        initialPhotoCount={settings.copies}
+      />
     </div>
   );
 };

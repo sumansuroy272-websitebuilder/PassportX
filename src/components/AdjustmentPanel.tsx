@@ -57,24 +57,24 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
     adjustments.grayscale !== DEFAULT_ADJUSTMENTS.grayscale;
 
   return (
-    <div className="border border-slate-200/90 rounded-xl bg-white overflow-hidden shadow-2xs">
+    <div className="border border-slate-200/90 rounded-2xl bg-white overflow-hidden shadow-2xs">
       {/* Header / Accordion trigger */}
-      <div className="flex items-center justify-between p-3.5 bg-slate-50/70 border-b border-slate-200/80">
+      <div className="flex items-center justify-between p-3.5 bg-slate-50/70 border-b border-slate-200/80 gap-2">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors flex-1 text-left"
+          className="flex items-center gap-2 text-sm font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors flex-1 text-left min-h-[38px]"
           aria-expanded={isExpanded}
         >
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-slate-500" />
+            <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-500" />
+            <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
           )}
-          <span>Adjustments</span>
+          <span>Lighting &amp; Color Adjustments</span>
           {isAdjusted && (
-            <span className="text-[11px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-              Modified
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/80 border border-blue-200 px-2 py-0.5 rounded-md">
+              Edited
             </span>
           )}
         </button>
@@ -83,11 +83,11 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
           type="button"
           onClick={onResetAdjustments}
           disabled={!isAdjusted}
-          className="text-xs font-medium text-slate-600 hover:text-blue-600 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-200/50 transition-colors cursor-pointer"
+          className="text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50/60 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white shadow-2xs transition-all cursor-pointer shrink-0 min-h-[36px]"
           title="Reset Brightness, Contrast, Saturation, and Grayscale"
         >
-          <RotateCcw className="w-3 h-3" />
-          <span>Reset Adjustments</span>
+          <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+          <span>Reset All</span>
         </button>
       </div>
 
@@ -104,7 +104,7 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
               <button
                 type="button"
                 onClick={() => onChange({ ...adjustments, brightness: 0 })}
-                className="font-mono text-slate-500 hover:text-blue-600 tabular-nums text-xs cursor-pointer"
+                className="font-mono text-slate-600 hover:text-blue-700 bg-slate-100 hover:bg-blue-50 px-2 py-0.5 rounded text-[11px] tabular-nums font-semibold cursor-pointer transition-colors"
                 title="Reset brightness to 0"
               >
                 {adjustments.brightness > 0 ? `+${adjustments.brightness}` : adjustments.brightness}
@@ -118,7 +118,7 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
               value={adjustments.brightness}
               onChange={handleBrightnessChange}
               aria-label="Brightness slider"
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
             />
           </div>
 
@@ -132,7 +132,7 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
               <button
                 type="button"
                 onClick={() => onChange({ ...adjustments, contrast: 0 })}
-                className="font-mono text-slate-500 hover:text-blue-600 tabular-nums text-xs cursor-pointer"
+                className="font-mono text-slate-600 hover:text-blue-700 bg-slate-100 hover:bg-blue-50 px-2 py-0.5 rounded text-[11px] tabular-nums font-semibold cursor-pointer transition-colors"
                 title="Reset contrast to 0"
               >
                 {adjustments.contrast > 0 ? `+${adjustments.contrast}` : adjustments.contrast}
@@ -146,7 +146,7 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
               value={adjustments.contrast}
               onChange={handleContrastChange}
               aria-label="Contrast slider"
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
             />
           </div>
 
@@ -160,7 +160,7 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
               <button
                 type="button"
                 onClick={() => onChange({ ...adjustments, saturation: 0 })}
-                className="font-mono text-slate-500 hover:text-blue-600 tabular-nums text-xs cursor-pointer"
+                className="font-mono text-slate-600 hover:text-blue-700 bg-slate-100 hover:bg-blue-50 px-2 py-0.5 rounded text-[11px] tabular-nums font-semibold cursor-pointer transition-colors"
                 title="Reset saturation to 0"
               >
                 {adjustments.saturation > 0 ? `+${adjustments.saturation}` : adjustments.saturation}
@@ -175,7 +175,7 @@ export const AdjustmentPanel: React.FC<AdjustmentPanelProps> = ({
               disabled={adjustments.grayscale}
               onChange={handleSaturationChange}
               aria-label="Saturation slider"
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 

@@ -478,3 +478,6 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
     </div>
   );
 };
+
+export { PrintPreviewModal } from './PrintPreviewModal';
+export type { PrintPreviewModalProps } from './PrintPreviewModal';

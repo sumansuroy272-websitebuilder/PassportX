@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+/* Touch responsiveness optimization */
+button, a, input, select {
+  touch-action: manipulation;
+}
+
+/* Hide scrollbar for clean horizontal indicators */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth range slider styling across browsers */
+input[type="range"]::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #2563eb;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  border: 2px solid #ffffff;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #2563eb;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  border: 2px solid #ffffff;
+}
+
 @media print {
   /* Hide UI elements during print */
   .no-print,
@@ -21,7 +56,12 @@
     padding: 0 !important;
   }
 
-  #printable-sheet {
+  body.print-modal-active #printable-sheet {
+    display: none !important;
+  }
+
+  #printable-sheet,
+  #printable-preview-sheet {
     box-shadow: none !important;
     margin: 0 auto !important;
     max-width: 100% !important;

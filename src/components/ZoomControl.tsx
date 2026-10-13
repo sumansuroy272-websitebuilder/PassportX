@@ -47,18 +47,18 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={handleZoomOut}
           disabled={zoom <= minZoom}
           aria-label="Zoom out"
-          className="w-10 h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-slate-700 transition-colors shadow-2xs cursor-pointer shrink-0"
+          className="w-11 h-11 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 active:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-slate-800 transition-all shadow-2xs hover:border-blue-400 hover:text-blue-700 cursor-pointer shrink-0 active:scale-95"
         >
-          <ZoomOut className="w-4 h-4" />
+          <ZoomOut className="w-5 h-5 text-slate-700" />
         </button>
 
-        <div className="flex-1 relative flex items-center">
+        <div className="flex-1 relative flex items-center px-1">
           <input
             type="range"
             min={minZoom}
@@ -67,7 +67,7 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
             value={zoom}
             onChange={handleSliderChange}
             aria-label="Zoom level"
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           />
         </div>
 
@@ -76,9 +76,9 @@ export const ZoomControl: React.FC<ZoomControlProps> = ({
           onClick={handleZoomIn}
           disabled={zoom >= maxZoom}
           aria-label="Zoom in"
-          className="w-10 h-10 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-slate-700 transition-colors shadow-2xs cursor-pointer shrink-0"
+          className="w-11 h-11 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 active:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-slate-800 transition-all shadow-2xs hover:border-blue-400 hover:text-blue-700 cursor-pointer shrink-0 active:scale-95"
         >
-          <ZoomIn className="w-4 h-4" />
+          <ZoomIn className="w-5 h-5 text-slate-700" />
         </button>
       </div>
     </div>

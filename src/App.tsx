@@ -58,7 +58,7 @@ export default function App() {
       />
 
       {/* Main Content Viewport */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col">
         {!currentImage ? (
           <div className="flex-1 flex flex-col justify-center py-4">
             <UploadZone
@@ -80,7 +80,7 @@ export default function App() {
       {/* Minimal unobtrusive footer */}
       <footer className="no-print border-t border-slate-200/60 bg-white/50 py-4 text-center text-xs text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>PassportX · Professional Passport Photo &amp; Print Studio</span>
+          <span>Passport Printer · Professional Passport Photo &amp; Print Studio</span>
           <span>100% Client-Side Processing · No Server Storage</span>
         </div>
       </footer>

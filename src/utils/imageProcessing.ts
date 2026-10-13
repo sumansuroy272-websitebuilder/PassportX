@@ -141,6 +141,7 @@ export async function renderHighResPhoto(params: {
   rotation: number; // degrees: 0, 90, 180, 270
   adjustments: EditorAdjustments;
   targetDpi?: number; // default 600 DPI for crystal clear print
+  backgroundColor?: string; // e.g. '#FFFFFF', '#70B5F9', or 'transparent'
 }): Promise<string> {
   const {
     image,
@@ -152,6 +153,7 @@ export async function renderHighResPhoto(params: {
     rotation,
     adjustments,
     targetDpi = 600,
+    backgroundColor = '#FFFFFF',
   } = params;
 
   // 1 inch = 25.4 mm
@@ -170,9 +172,13 @@ export async function renderHighResPhoto(params: {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  // White background default (standard for passport photos)
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(0, 0, exportW, exportH);
+  // Background fill (standard White #FFFFFF or Sky Blue #70B5F9 or transparent)
+  if (backgroundColor === 'transparent') {
+    ctx.clearRect(0, 0, exportW, exportH);
+  } else {
+    ctx.fillStyle = backgroundColor || '#FFFFFF';
+    ctx.fillRect(0, 0, exportW, exportH);
+  }
 
   // Apply filters
   const filterStr = getCssFilterString(adjustments);
@@ -194,7 +200,8 @@ export async function renderHighResPhoto(params: {
   ctx.drawImage(image, -drawW / 2, -drawH / 2, drawW, drawH);
   ctx.restore();
 
-  return canvas.toDataURL('image/jpeg', 0.95);
+  const isPng = backgroundColor === 'transparent';
+  return canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.95);
 }
 
 /**

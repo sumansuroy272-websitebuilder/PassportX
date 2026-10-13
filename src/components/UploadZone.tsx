@@ -196,14 +196,14 @@ export const UploadZone: React.FC<UploadZoneProps> = ({
             JPG, JPEG or PNG
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <span className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-xs transition-colors">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
+            <span className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg transition-all min-h-[48px] cursor-pointer">
               Choose from Computer or Phone
             </span>
           </div>
 
-          <p className="text-xs text-slate-400 mt-4">
-            Drag & drop supported · All processing runs directly in your browser
+          <p className="text-xs text-slate-500 mt-4">
+            Drag &amp; drop supported · 100% private, runs directly in your browser
           </p>
         </div>
       </div>
@@ -215,7 +215,7 @@ export const UploadZone: React.FC<UploadZoneProps> = ({
       </div>
 
       {/* Quick Sample Option */}
-      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-slate-100/80 border border-slate-200/60 text-slate-700">
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs text-slate-700">
         <div className="flex items-center gap-2.5 text-xs sm:text-sm">
           <ImageIcon className="w-4 h-4 text-blue-600 shrink-0" />
           <span>Don&apos;t have a headshot handy right now?</span>
@@ -224,10 +224,10 @@ export const UploadZone: React.FC<UploadZoneProps> = ({
           type="button"
           onClick={handleSamplePhoto}
           disabled={isLoading}
-          className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white text-slate-800 border border-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-800 border border-slate-300 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50/50 transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          Load Sample Photo
+          <Sparkles className="w-4 h-4 text-amber-500" />
+          <span>Load Sample Photo</span>
         </button>
       </div>
 
